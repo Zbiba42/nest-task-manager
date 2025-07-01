@@ -4,7 +4,6 @@ import { createTaskDto } from './dtos/createTaskDto';
 import { TaskStatus } from './interfaces/task-status-enum';
 import { filterTaskDto } from './dtos/filterTaskDto';
 import { Injectable } from '@nestjs/common';
-import { GetUser } from 'src/auth/get-user-decorator';
 import { User } from 'src/auth/user.entity';
 
 @Injectable()
@@ -13,10 +12,12 @@ export class TasksRepository extends Repository<Task> {
     super(Task, dataSource.createEntityManager());
   }
 
-  async getTasks(dto: filterTaskDto): Promise<Task[]> {
+  async getTasks(dto: filterTaskDto, user: User): Promise<Task[]> {
     const { status, search } = dto;
 
     const query = this.createQueryBuilder('task');
+
+    query.where({ user: user })
 
     if (status) {
       query.andWhere('task.status = :status', { status });
@@ -24,7 +25,7 @@ export class TasksRepository extends Repository<Task> {
 
     if (search) {
       query.andWhere(
-        'LOWER(task.title) LIKE LOWER(:search) OR LOWER(task.description) LIKE LOWER(:search)',
+        '(LOWER(task.title) LIKE LOWER(:search) OR LOWER(task.description) LIKE LOWER(:search))',
         { search: `%${search}%` },
       );
     }
