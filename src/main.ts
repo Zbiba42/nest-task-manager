@@ -6,9 +6,8 @@ import { TransformInterceptor } from './transform-interceptor';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // Enable CORS
   app.enableCors({
-    origin: 'http://localhost:5173', // Your frontend URL
+    origin: '*',
     methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
     credentials: true,
   });

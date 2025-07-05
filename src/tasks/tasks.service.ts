@@ -4,6 +4,7 @@ import { TasksRepository } from './tasks.repository';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Task } from './task.entity';
 import { createTaskDto } from './dtos/createTaskDto';
+import { updateTaskDto } from './dtos/updateTaskDto';
 import { filterTaskDto } from './dtos/filterTaskDto';
 import { User } from 'src/auth/user.entity';
 
@@ -32,6 +33,28 @@ export class TasksService {
 
   createTask(dto: createTaskDto, user: User): Promise<Task> {
     return this.taskRepository.createTask(dto, user);
+  }
+
+  async updateTask(id: string, dto: updateTaskDto, user: User): Promise<Task> {
+    const task = await this.getTaskById(id, user);
+
+    if (!task) {
+      throw new NotFoundException('Task not found');
+    }
+
+    if (dto.title !== undefined) {
+      task.title = dto.title;
+    }
+    if (dto.description !== undefined) {
+      task.description = dto.description;
+    }
+    if (dto.status !== undefined) {
+      task.status = dto.status;
+    }
+
+    await this.taskRepository.save(task);
+
+    return task;
   }
 
   async updateStatus(id: string, status: TaskStatus, user: User): Promise<Task> {
