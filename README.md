@@ -1,98 +1,413 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Task Manager API
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+A RESTful API for task management built with NestJS, TypeORM, and MySQL. This API provides user authentication and comprehensive task management capabilities.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## 🚀 Features
 
-## Description
+- **User Authentication**: JWT-based authentication with secure password hashing
+- **Task Management**: Full CRUD operations for tasks
+- **Task Filtering**: Filter tasks by status and search terms
+- **Profile Management**: Update user profile and password
+- **Input Validation**: Comprehensive validation using class-validator
+- **Database**: MySQL with TypeORM for robust data persistence
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## 🛠️ Tech Stack
 
-## Project setup
+- **Framework**: NestJS
+- **Database**: MySQL
+- **ORM**: TypeORM
+- **Authentication**: JWT + Passport
+- **Validation**: class-validator
+- **Password Hashing**: bcrypt
+- **Language**: TypeScript
+
+## 📦 Installation
 
 ```bash
-$ yarn install
+# Install cross-env globally (required for environment management)
+npm install -g cross-env
+
+# Install dependencies
+yarn install
 ```
 
-## Compile and run the project
+## 🔧 Environment Variables
+
+This project uses stage-based environment configuration. The application loads environment variables from `.env.stage.${STAGE}` files based on the `STAGE` variable.
+
+**Environment File Selection:**
+- Development: `.env.stage.dev` (when `STAGE=dev`)
+- Production: `.env.stage.prod` (when `STAGE=prod`)
+
+Create the appropriate `.env.stage.${stage}` file with the following variables:
+
+```env
+# .env.stage.dev
+DB_HOST=your_db_host
+DB_PORT=your_db_port
+DB_USERNAME=your_db_username
+DB_PASSWORD=your_db_password
+DB_DATABASE=your_db_name
+JWT_SECRET=your-super-secret-jwt-key
+```
+
+> **Note**: I've left example environment files in this repository for demonstration purposes. 
+> **DON'T DO THIS IN YOUR PRODUCTION PROJECTS!** 😵 
+> Always add `.env*` files to your `.gitignore` to keep your secrets safe! 🔐
+
+## 🏃 Running the Application
 
 ```bash
-# development
-$ yarn run start
+# Development mode
+yarn start:dev
 
-# watch mode
-$ yarn run start:dev
-
-# production mode
-$ yarn run start:prod
+# Production mode
+yarn start:prod
 ```
 
-## Run tests
+The API will be available at `http://localhost:3000`
+
+## 📋 API Endpoints
+
+### 🔐 Authentication Endpoints
+
+> **🔒 Authentication Required**: All endpoints marked with 🔒 require a valid JWT token in the Authorization header: `Authorization: Bearer <access_token>`
+
+#### POST /auth/signup
+Register a new user account.
+
+**Request Body:**
+```json
+{
+  "fullName": "John Doe",
+  "email": "john@example.com",
+  "password": "SecurePass123!"
+}
+```
+
+**Validation Rules:**
+- `fullName`: 4-24 characters
+- `email`: Valid email format
+- `password`: 8-32 characters, must contain uppercase, lowercase, and number/special character
+
+**Response:**
+```json
+{
+  "statusCode": 201,
+  "message": "User created successfully"
+}
+```
+
+#### POST /auth/signin
+Sign in with existing credentials.
+
+**Request Body:**
+```json
+{
+  "email": "john@example.com",
+  "password": "SecurePass123!"
+}
+```
+
+**Response:**
+```json
+{
+  "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+}
+```
+
+#### 🔒 GET /auth/profile
+Get current user profile.
+
+**Response:**
+```json
+{
+  "id": "uuid",
+  "fullName": "John Doe",
+  "email": "john@example.com"
+}
+```
+
+#### 🔒 PATCH /auth/profile
+Update user profile.
+
+**Request Body:**
+```json
+{
+  "fullName": "John Smith",
+  "email": "johnsmith@example.com"
+}
+```
+
+**Response:**
+```json
+{
+  "id": "uuid",
+  "fullName": "John Smith",
+  "email": "johnsmith@example.com"
+}
+```
+
+#### 🔒 PATCH /auth/password
+Update user password.
+
+**Request Body:**
+```json
+{
+  "currentPassword": "OldPass123!",
+  "newPassword": "NewPass123!",
+  "confirmPassword": "NewPass123!"
+}
+```
+
+**Response:**
+```json
+{
+  "message": "Password updated successfully"
+}
+```
+
+### 📝 Task Management Endpoints
+
+#### 🔒 GET /tasks
+Get all tasks for the authenticated user with optional filtering.
+
+**Query Parameters:**
+- `status` (optional): Filter by task status (`OPEN`, `IN_PROGRESS`, `DONE`)
+- `search` (optional): Search tasks by title or description
+
+**Examples:**
+```
+GET /tasks
+GET /tasks?status=OPEN
+GET /tasks?search=project
+GET /tasks?status=IN_PROGRESS&search=urgent
+```
+
+**Response:**
+```json
+[
+  {
+    "id": "uuid",
+    "title": "Complete project documentation",
+    "description": "Write comprehensive API documentation",
+    "status": "IN_PROGRESS",
+    "createdAt": "2023-12-01T10:00:00.000Z",
+    "updatedAt": "2023-12-01T10:00:00.000Z"
+  }
+]
+```
+
+#### 🔒 GET /tasks/:id
+Get a specific task by ID.
+
+**Response:**
+```json
+{
+  "id": "uuid",
+  "title": "Complete project documentation",
+  "description": "Write comprehensive API documentation",
+  "status": "IN_PROGRESS",
+  "createdAt": "2023-12-01T10:00:00.000Z",
+  "updatedAt": "2023-12-01T10:00:00.000Z"
+}
+```
+
+#### 🔒 POST /tasks
+Create a new task.
+
+**Request Body:**
+```json
+{
+  "title": "New Task",
+  "description": "Task description here"
+}
+```
+
+**Response:**
+```json
+{
+  "id": "uuid",
+  "title": "New Task",
+  "description": "Task description here",
+  "status": "OPEN",
+  "createdAt": "2023-12-01T10:00:00.000Z",
+  "updatedAt": "2023-12-01T10:00:00.000Z"
+}
+```
+
+#### 🔒 PATCH /tasks/:id
+Update a task.
+
+**Request Body:**
+```json
+{
+  "title": "Updated Task Title",
+  "description": "Updated description",
+  "status": "IN_PROGRESS"
+}
+```
+
+**Response:**
+```json
+{
+  "id": "uuid",
+  "title": "Updated Task Title",
+  "description": "Updated description",
+  "status": "IN_PROGRESS",
+  "createdAt": "2023-12-01T10:00:00.000Z",
+  "updatedAt": "2023-12-01T10:00:00.000Z"
+}
+```
+
+#### 🔒 PATCH /tasks/:id/status
+Update only the status of a task.
+
+**Request Body:**
+```json
+{
+  "status": "DONE"
+}
+```
+
+**Response:**
+```json
+{
+  "id": "uuid",
+  "title": "Task Title",
+  "description": "Task description",
+  "status": "DONE",
+  "createdAt": "2023-12-01T10:00:00.000Z",
+  "updatedAt": "2023-12-01T10:00:00.000Z"
+}
+```
+
+#### 🔒 DELETE /tasks/:id
+Delete a task.
+
+**Response:**
+```json
+{
+  "statusCode": 200,
+  "message": "Task deleted successfully"
+}
+```
+
+## 📊 Task Status Values
+
+Tasks can have one of three statuses:
+- `OPEN`: Task is created but not started
+- `IN_PROGRESS`: Task is being worked on
+- `DONE`: Task is completed
+
+## 🔒 Authentication
+
+This API uses JWT (JSON Web Tokens) for authentication. After signing in, include the token in the Authorization header for all protected routes:
+
+```
+Authorization: Bearer <your_jwt_token>
+```
+
+## ❌ Error Responses
+
+The API returns structured error responses:
+
+```json
+{
+  "statusCode": 400,
+  "message": "Validation failed",
+  "error": "Bad Request"
+}
+```
+
+Common HTTP status codes:
+- `200`: Success
+- `201`: Created
+- `400`: Bad Request (validation errors)
+- `401`: Unauthorized (invalid/missing token)
+- `403`: Forbidden (insufficient permissions)
+- `404`: Not Found
+- `500`: Internal Server Error
+
+
+
+## 📝 API Usage Examples
+
+### JavaScript/TypeScript Example
+
+```javascript
+// Sign in
+const signInResponse = await fetch('http://localhost:3000/auth/signin', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    email: 'john@example.com',
+    password: 'SecurePass123!'
+  })
+});
+
+const { accessToken } = await signInResponse.json();
+
+// Create a task
+const createTaskResponse = await fetch('http://localhost:3000/tasks', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${accessToken}`
+  },
+  body: JSON.stringify({
+    title: 'New Task',
+    description: 'Task description'
+  })
+});
+
+const newTask = await createTaskResponse.json();
+```
+
+### cURL Examples
 
 ```bash
-# unit tests
-$ yarn run test
+# Sign in
+curl -X POST http://localhost:3000/auth/signin \
+  -H "Content-Type: application/json" \
+  -d '{"email":"john@example.com","password":"SecurePass123!"}'
 
-# e2e tests
-$ yarn run test:e2e
+# Create a task
+curl -X POST http://localhost:3000/tasks \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <your_token>" \
+  -d '{"title":"New Task","description":"Task description"}'
 
-# test coverage
-$ yarn run test:cov
+# Get all tasks
+curl -X GET http://localhost:3000/tasks \
+  -H "Authorization: Bearer <your_token>"
 ```
 
-## Deployment
+## 🗃️ Database Schema
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+### Users Table
+- `id`: UUID (Primary Key)
+- `fullName`: String
+- `email`: String (Unique)
+- `password`: String (Hashed)
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+### Tasks Table
+- `id`: UUID (Primary Key)
+- `title`: String
+- `description`: String
+- `status`: Enum (OPEN, IN_PROGRESS, DONE)
+- `userId`: UUID (Foreign Key)
 
-```bash
-$ yarn install -g @nestjs/mau
-$ mau deploy
-```
+## 🤝 Contributing
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+1. Fork the repository
+2. Create a feature branch
+3. Commit your changes
+4. Push to the branch
+5. Create a Pull Request
 
-## Resources
+## 📄 License
 
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+This project is licensed under the MIT License.
